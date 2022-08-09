@@ -107,3 +107,5 @@ contract CryptoDevs is ERC721Enumerable, Ownable {
     // Fallback function is called when msg.data is not empty
     fallback() external payable {}
 }
+
+// Contract addy: 0xE30DAEEFc0EB7418768550c0843cbBE69D674A04
