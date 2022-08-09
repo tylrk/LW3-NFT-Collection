@@ -49,9 +49,9 @@ contract CryptoDevs is ERC721Enumerable, Ownable {
         whitelist = IWhitelist(whitelistContract);
      }
 
-     /**
-      * @dev startPresale starts a presale for the whitelisted addresses
-      */
+    /**
+     * @dev startPresale starts a presale for the whitelisted addresses
+     */
     function startPresale() public onlyOwner {
         presaleStarted = true;
         // Set the presaleEnded time as current timestamp + 5 minutes
@@ -59,5 +59,51 @@ contract CryptoDevs is ERC721Enumerable, Ownable {
         presaleEnded = block.timestamp + 5 minutes;
     }
 
-    
+    /**
+     * @dev presaleMint allows a user to mint one NFT per transaction during the presale 
+     */
+    function presaleMint() public payable onlyWhenNotPaused {
+        require(presaleStarted && block.timestamp < presaleEnded, "Presale is not running");
+        require(whitelist.whitelistedAddresses(msg.sender), "You are not whitelisted");
+        require(tokenIds < maxTokenIds, "Exceeded max supply");
+        require(msg.value >= _price, "Ether value sent is incorrect");
+        tokenIds += 1;
+        // _safeMint is a safer version of the _mint function as it ensures that
+        // if the address being minted to is a contract, then it knows how to deal
+        // with ERC721 contracts.
+        // If the address being minted to is not a contract, it works the same as _mint.
+        _safeMint(msg.sender, tokenIds);
+    }
+
+    /**
+     * @dev _baseURI overrides OpenZeppelin's ERC721 implementation, which by default
+     * returned an empty string for the baseURI.
+     */
+    function _baseURI() internal view virtual override returns (string memory) {
+        return _baseTokenURI;
+     }
+
+    /**
+     * @dev setPaused makes the contract paused or unpaused
+     */
+    function setPaused(bool val) public onlyOwner {
+        _paused = val;
+     }
+
+    /**
+     * @dev withdraw sends all the ether in the contract
+     * to the owner of the contract.
+     */
+    function withdraw() public onlyOwner {
+            address _owner = owner();
+            uint256 amount = address(this).balance;
+            (bool sent, ) = _owner.call{value: amount}("");
+            require(sent, "Failed to send Ether");
+      }
+
+    // Function to receive Ether. msg.data msu be empty
+    receive() external payable {}
+
+    // Fallback function is called when msg.data is not empty
+    fallback() external payable {}
 }
