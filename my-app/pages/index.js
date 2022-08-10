@@ -1,8 +1,82 @@
+import { Contract, providers, utils } from "ethers";
 import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import React, { useEffect, useRef, useState } from "react";
+import Web3Modal from "web3modal";
+import { abi, NFT_CONTRACT_ADDRESS } from "../constants";
+import styles from '../styles/Home.module.css';
 
 export default function Home() {
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [presaleStarted, setPresaleStarted] = useState(false);
+  const [presaleEnded, setPresaleEnded] = useState(false);
+  // loading is set to true when we are waiting for a transaction to get mined
+  const [loading, setLoading] = useState(false);
+  // Checks if the currently connected wallet is the owner of the contract
+  const [isOwner, setIsOwner] = useState(false);
+  const [tokenIdsMinted, setTokenIdsMinted] = useState('0');
+  // Reference to the Web3 Modal used for connecting to Metamask, which persists as long as the page is open
+  const web3ModalRef = useRef();
+
+  const presaleMint = async () => {
+    try {
+      // We need a Signer here since this is a 'write' transaction
+      const signer = await getProviderOrSigner(true);
+      // Create a new instance of the contract with a Signer, which allows updating methods
+      const whitelistContract = new Contract(
+        NFT_CONTRACT_ADDRESS,
+        abi,
+        signer
+      );
+      // Call presaleMint from the contract (only whitelisted addresses can mint)
+      const tx = await whitelistContract.presaleMint({
+        // Value signifies the cost of one NFT, which is 0.01 eth
+        // We are parsing the `0.01` string to ether using the utils library from ethers.js
+        value: utils.parseEther("0.01"),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+      });
+      setLoading(true);
+      // Wait for transaction to be mined
+      await tx.wait();
+      setLoading(false);
+      window.alert("You successfully minted a CryptoDev!");
+    }
+     catch (err) {
+      console.log(err);
+     }
+  };
+
+  const publicMint = async () => {
+    try {
+      // Write transaction
+      const signer = await getProviderOrSigner(true);
+      const whitelistContract = new Contract(
+        NFT_CONTRACT_ADDRESS,
+        abi,
+        signer
+      );
+      const tx = await whitelistContract.mint({
+        value: utils.parseEther("0.01"),
+      });
+      setLoading(true);
+      await tx.wait();
+      setLoading(false);
+      window.alert("You successfully minted a CryptoDev!");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const connectWallet = async () => {
+    try {
+      // Get the provider from web3Modal, which in this case is Metamask
+      // Prompts the user to connect wallet upon first use
+      await getProviderOrSigner();
+      setWalletConnected(true);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+
   return (
     <div className={styles.container}>
       <Head>
