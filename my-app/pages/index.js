@@ -40,7 +40,7 @@ export default function Home() {
       window.alert("You successfully minted a CryptoDev!");
     }
      catch (err) {
-      console.log(err);
+      console.error(err);
      }
   };
 
@@ -61,7 +61,7 @@ export default function Home() {
       setLoading(false);
       window.alert("You successfully minted a CryptoDev!");
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -72,7 +72,7 @@ export default function Home() {
       await getProviderOrSigner();
       setWalletConnected(true);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -92,7 +92,7 @@ export default function Home() {
     setLoading(false);
     await checkIfPresaleStarted();
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -115,7 +115,7 @@ export default function Home() {
       setPresaleStarted(_presaleStarted);
       return _presaleStarted;
     } catch (err) {
-      console.log(err);
+      console.error(err);
       return false;
     }
   };
@@ -143,8 +143,49 @@ export default function Home() {
       }
       return hasEnded;
     } catch (err) {
-      console.log(err);
+      console.error(err);
       return false;
+    }
+  };
+
+  const getOwner = async () => {
+    try {
+      // Read-only; Get Provider
+      const provider = await getProviderOrSigner();
+      const nftContract = new Contract(
+        NFT_CONTRACT_ADDRESS,
+        abi,
+        provider
+      );
+      // Call owner function from contract
+      const _owner = await nftContract.owner();
+      // Get signer to extract the address of the currently connected wallet
+      const signer = await getProviderOrSigner(true);
+      // Get address
+      const address = await signer.getAddress();
+      if(address.toLowerCase() === _owner.toLowerCase()) {
+        setIsOwner(true);
+      }
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
+
+  const getTokenIdsMinted = async () => {
+    try {
+      // Read-only; Get Provider
+      const provider = await getProviderOrSigner();
+      const nftContract = new Contract(
+        NFT_CONTRACT_ADDRESS,
+        abi,
+        provider
+      );
+      // Call tokenIds from the contract
+      const _tokenIds = await nftContract.tokenIds();
+      // _tokenIds is a `Big Number`. We need to convert the Big Number to a string
+      setTokenIdsMinted(_tokenIds.toString());
+    } catch (err) {
+      console.error(err);
     }
   };
 
