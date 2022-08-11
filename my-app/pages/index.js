@@ -76,6 +76,78 @@ export default function Home() {
     }
   };
 
+  const startPresale = async () => {
+    try {
+    // Write transaction
+    const signer = await getProviderOrSigner(true);
+    const whitelistContract = new Contract(
+      NFT_CONTRACT_ADDRESS,
+      abi,
+      signer
+    );
+    // Call startPresale from the contract
+    const tx = await whitelistContract.startPresale();
+    setLoading(true);
+    await tx.wait();
+    setLoading(false);
+    await checkIfPresaleStarted();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const checkIfPresaleStarted = async () => {
+    try {
+      // Only reading from blockchain; No need for signer
+      // Get provider from web3Modal
+      const provider = await getProviderOrSigner();
+      // Connecting to contract using a provider; read-only access to the contract
+      const nftContract = new Contract(
+        NFT_CONTRACT_ADDRESS,
+        abi,
+        provider
+      );
+      // Call presaleStarted from the contract
+      const _presaleStarted = await nftContract.presaleStarted();
+      if(!_presaleStarted) {
+        await getOwner();
+      }
+      setPresaleStarted(_presaleStarted);
+      return _presaleStarted;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  };
+
+  const checkIfPresaleEnded = async () => {
+    try {
+      // Read-only; Get Provider
+      const provider = await getProviderOrSigner();
+      const nftContract = new Contract(
+        NFT_CONTRACT_ADDRESS,
+        abi,
+        provider
+      );
+      // Call presaleEnded from the contract
+      const _presaleEnded = await nftContract.presaleEnded();
+      // _presaleEnded is a Big Number, so the lt(less than function) is used over `<`
+      // Date.now()/1000 returns the current time in seconds
+      // We compare if the _presaleEnded timestamp is less than the current time, 
+      // which means presale has ended
+      const hasEnded = _presaleEnded.lt(Math.floor(Date.now() / 1000));
+      if (hasEnded) {
+        setPresaleEnded(true);
+      } else {
+        setPresaleEnded(false);
+      }
+      return hasEnded;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  };
+
 
   return (
     <div className={styles.container}>
