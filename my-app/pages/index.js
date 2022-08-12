@@ -107,7 +107,7 @@ export default function Home() {
         abi,
         provider
       );
-      // Call presaleStarted from the contract
+      // Call presaleStarted (a boolean) from the contract
       const _presaleStarted = await nftContract.presaleStarted();
       if(!_presaleStarted) {
         await getOwner();
@@ -187,6 +187,38 @@ export default function Home() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  /**
+   * Returns a Provider or Signer object representing the Ethereum RPC with or without the
+   * signing capabilities of metamask attached
+   *
+   * A `Provider` is needed to interact with the blockchain - reading transactions, reading balances, reading state, etc.
+   *
+   * A `Signer` is a special type of Provider used in case a `write` transaction needs to be made to the blockchain, which involves the connected account
+   * needing to make a digital signature to authorize the transaction being sent. Metamask exposes a Signer API to allow your website to
+   * request signatures from the user using Signer functions.
+   *
+   * @param {*} needSigner - True if you need the signer, default false otherwise
+   */
+
+  const getProviderOrSigner = async (needSigner = false) => {
+    // Connect to Metamask
+    // Since `web3Modal` was stored as a reference, we need to access the `current` value to get access to the underlying object
+    const provider = await web3ModalRef.current.connect();
+    const web3Provider = await providers.Web3Provider(provider);
+
+    // If the user is NOT connected to Goerli, tell them to switch
+    const { chainId } = await web3Provider.getNetwork();
+    if(chainId != 5) {
+      window.alert("Change network to Goerli");
+      throw new Error("Incorrect network");
+    }
+    if (needSigner) {
+      const signer = web3Provider.getSigner();
+      return signer;
+    }
+    return web3Provider;
   };
 
 
