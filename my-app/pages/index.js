@@ -206,7 +206,7 @@ export default function Home() {
     // Connect to Metamask
     // Since `web3Modal` was stored as a reference, we need to access the `current` value to get access to the underlying object
     const provider = await web3ModalRef.current.connect();
-    const web3Provider = await providers.Web3Provider(provider);
+    const web3Provider = new providers.Web3Provider(provider);
 
     // If the user is NOT connected to Goerli, tell them to switch
     const { chainId } = await web3Provider.getNetwork();
