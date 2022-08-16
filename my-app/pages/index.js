@@ -340,3 +340,5 @@ export default function Home() {
     </div>
   );
 }
+
+// Vercel: https://lw3-nft-collection-three.vercel.app/
