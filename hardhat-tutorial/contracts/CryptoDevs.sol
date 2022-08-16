@@ -119,4 +119,5 @@ contract CryptoDevs is ERC721Enumerable, Ownable {
     fallback() external payable {}
 }
 
-// Contract addy: 0xE30DAEEFc0EB7418768550c0843cbBE69D674A04
+// 1st Contract addy: 0xE30DAEEFc0EB7418768550c0843cbBE69D674A04
+// Final Contract addy: 0x43787587e5f18046a0B095aE29cE5Ee4eec77832
